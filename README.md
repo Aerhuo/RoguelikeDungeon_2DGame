@@ -2,15 +2,15 @@
 
 **语言**: 中文 | [English](https://github.com/Aerhuo/RoguelikeDungeon_2DGame)
 
-**RoguelikeDungeon_2DGame** 是一款基于现代 C++ 与 SFML 构建的轻量级 2D 回合制地牢探险游戏。本项目由 Aerhuo 发起，旨在通过完整的游戏开发实践，深入探索并应用面向对象编程的核心架构思想，实现一个具备扎实底层架构与基础策略深度的 Roguelike 游戏雏形。
+![C++](https://img.shields.io/badge/C++-17%2B-00599C?logo=c%2B%2B) ![SFML](https://img.shields.io/badge/SFML-2.6-8CC445?logo=sfml) ![CMake](https://img.shields.io/badge/CMake-3.10%2B-064F8C?logo=cmake) ![OOP](https://img.shields.io/badge/Architecture-OOP%20%26%20Event%20Queue-ff69b4)
+
+**RoguelikeDungeon_2DGame** 是一款基于现代 C++ 与 SFML(简单快速多媒体库) 构建的轻量级 2D 回合制地牢探险游戏。本项目由 Aerhuo 发起，旨在通过完整的游戏开发实践，深入探索并应用面向对象编程的核心架构思想，实现一个具备扎实底层架构与基础策略深度的 Roguelike 游戏雏形。
 
 > ⚡**核心架构优势**：采用高内聚低耦合的现代游戏引擎设计理念。
 > 1. **双层网格架构**：将静态地形与动态实体在数据结构上剥离，碰撞检测达到 $O(1)$ 时间复杂度。
 > 2. **事件队列驱动**：引入命令模式，分离输入决策与物理执行，解决回合制结算的时序重叠问题。
 > 3. **全局上下文**：构建统一的 `World` 结构体，消除类之间的循环依赖。
 > 4. **内存安全**：全面应用 `std::unique_ptr` 独占智能指针与延迟删除机制，避免内存泄漏与迭代器失效。
-> 
-> 
 
 ## 🚀 核心特性
 
@@ -66,7 +66,7 @@
 RoguelikeDungeon_2DGame/
 ├── CMakeLists.txt          # CMake 构建配置文件
 ├── README.md               # 项目自述文件
-├── bin/                    # 编译输出的可执行文件目录
+├── build/                  # 构建输出目录 (执行 CMake 后生成)
 ├── include/                # 头文件目录
 │   ├── Enemy.hpp           # 敌人类声明
 │   ├── Entity.hpp          # 实体基类与组件声明
@@ -76,7 +76,7 @@ RoguelikeDungeon_2DGame/
 │   ├── Player.hpp          # 玩家类声明
 │   └── World.hpp           # 全局世界上下文声明
 └── src/                    # 源文件目录
-    ├── Enemy.cpp           # 敌人 AI 逻辑实现
+    ├── Enemy.cpp           # 敌人逻辑实现
     ├── Entity.cpp          # 实体组件管理器实现
     ├── Game.cpp            # 游戏主循环与事件解算实现
     ├── Main.cpp            # 应用程序入口
@@ -100,23 +100,19 @@ RoguelikeDungeon_2DGame/
 本项目使用 CMake 进行构建管理：
 
 ```bash
-# 1. 克隆项目
-git clone https://github.com/Aerhuo/RoguelikeDungeon_2DGame.git
-cd RoguelikeDungeon_2DGame
-
-# 2. 创建构建目录
+# 1. 创建构建目录并进入
 mkdir build
 cd build
 
-# 3. 生成构建文件
+# 2. 生成构建文件
 cmake ..
 
-# 4. 编译项目
-cmake --build . --config Release
+# 3. 编译项目
+cmake --build .
 
-# 5. 运行游戏
-# Windows 环境下：
-./Release/MyGame.exe
+# 4. 运行游戏
+# Windows 环境下 (可执行文件直接生成在 build 目录中)：
+./MyGame.exe
 # Linux / macOS 环境下：
 ./MyGame
 
