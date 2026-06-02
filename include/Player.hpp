@@ -7,13 +7,7 @@
 class Player : public Entity
 {
 public:
-    Player()
-    {
-        data.setMaxHp(100), data.setMaxMp(100);
-        data.init();
-
-        manager.setColor(sf::Color::Blue);
-    }
+    Player();
 
     bool handleInput(int dx, int dy, World& world);
     void updateAction(World& world) override;

@@ -7,13 +7,7 @@
 class Slime : public Entity
 {
 public:
-    Slime()
-    {
-        data.setMaxHp(10), data.setMaxMp(10);
-        data.init();
-
-        manager.setColor(sf::Color::Red);
-    }
+    Slime();
 
     void updateAction(World& world) override;
     void dead(World& world, sf::RenderWindow& window) override;

@@ -1,4 +1,20 @@
 #include "Entity.hpp"
+#include "World.hpp"
+
+int EntityData::getDamage() const
+{
+    return rawDamage;
+}
+
+void EntityData::takeDamage(float rawDamage)
+{
+    hp -= rawDamage;
+}
+
+void EntityData::init()
+{
+    hp = maxHp, mp = maxMp;
+}
 
 void Entity::spawn(Map& map)
 {
@@ -7,6 +23,33 @@ void Entity::spawn(Map& map)
         spawned = true;
         map.setEntityAt(manager.getPos(), this);
     }
+}
+
+bool Entity::bump(int dx, int dy, World& world)
+{
+    sf::Vector2i toPos = sf::Vector2i(manager.getPos().x + dx, manager.getPos().y + dy);
+    if (world.map.getTerrainGridType(toPos) == 0) return false; // 无法移动则取消行动
+
+    Entity* enemy = world.map.getEntityAt(toPos);
+    Event ev;
+    ev.dx = dx, ev.dy = dy;
+    ev.actor = this;
+    
+    if (enemy != nullptr && enemy->data.getTeam() != data.getTeam())
+    {
+        // 如果目标位置存在敌人，则触发攻击事件
+        ev.type = EventType::ATTACK;
+        ev.target = enemy;
+    }
+    else
+    {
+        // 如果目标位置可通行且不存在敌人
+        ev.type = EventType::MOVE;
+    }
+
+    world.eventQueue.push(ev);
+
+    return true;
 }
 
 EntityManager::EntityManager()
@@ -20,12 +63,12 @@ void EntityManager::setPosition(sf::Vector2i pos)
     this->pos = pos;
 }
 
-bool EntityManager::move(int dx, int dy, Map& map, Entity* self)
+bool EntityManager::move(int dx, int dy, World& world, Entity* self)
 {
     sf::Vector2i cpos = sf::Vector2i(pos.x + dx, pos.y + dy);
 
-    Entity* toEntity = map.getEntityAt(cpos);
-    if (map.getTerrainGridType(cpos)) // 目标位置可通行
+    Entity* toEntity = world.map.getEntityAt(cpos);
+    if (world.map.getTerrainGridType(cpos)) // 目标位置可通行
     {
         if (toEntity != nullptr)
         {
@@ -35,8 +78,8 @@ bool EntityManager::move(int dx, int dy, Map& map, Entity* self)
         else
         {
             // 可以直接通行
-            map.setEntityAt(pos, nullptr);
-            map.setEntityAt(cpos, self);
+            world.map.setEntityAt(pos, nullptr);
+            world.map.setEntityAt(cpos, self);
             pos = cpos;
             return true;
         }

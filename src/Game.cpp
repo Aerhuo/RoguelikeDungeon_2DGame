@@ -8,15 +8,19 @@ Game::Game() : world(MapWidth, MapHeight), window(sf::VideoMode(PixelX, PixelY),
 
     world.map.generate();
     
+    sf::Vector2i pos = world.map.getRandomFloorTile();
+
     // 生成玩家
-    world.player.manager.setPosition(world.map.getRandomFloorTile());
+    while (world.map.getEntityAt(pos) != nullptr) pos = world.map.getRandomFloorTile();
+    world.player.manager.setPosition(pos);
     world.player.data.init();
     world.player.spawn(world.map);
 
     // 生成怪物
     world.enemies.push_back(std::make_unique<Slime>());
 
-    world.enemies.back()->manager.setPosition(world.map.getRandomFloorTile());
+    while (world.map.getEntityAt(pos) != nullptr) pos = world.map.getRandomFloorTile();
+    world.enemies.back()->manager.setPosition(pos);
     world.enemies.back()->data.init();
     world.enemies.back()->spawn(world.map);
 
@@ -46,15 +50,17 @@ void Game::processEvents()
         // 玩家按键响应
         if (event.type == sf::Event::KeyPressed)
         {
+            bool skip = false;
             int dx = 0, dy = 0;
             if (event.key.code == sf::Keyboard::W) dy = -1;
             if (event.key.code == sf::Keyboard::S) dy = 1;
             if (event.key.code == sf::Keyboard::A) dx = -1;
             if (event.key.code == sf::Keyboard::D) dx = 1;
+            if (event.key.code == sf::Keyboard::Enter) skip = true;
 
-            if (dx != 0 || dy != 0)
+            if (skip || dx != 0 || dy != 0)
             {
-                if (world.player.handleInput(dx, dy, world))
+                if (skip || world.player.handleInput(dx, dy, world))
                 {
                     executeTurn();
                 }
@@ -86,11 +92,13 @@ void Game::update()
         }
     }
 
+    // 摄像机跟随
     float pixelX = world.player.manager.getPos().x * TileSize + TileSize / 2.0f;
     float pixelY = world.player.manager.getPos().y * TileSize + TileSize / 2.0f;
     camera.setCenter(pixelX, pixelY);
 }
 
+// 渲染各种图层
 void Game::render()
 {
     window.clear();
@@ -107,8 +115,8 @@ void Game::render()
 // 执行回合行为
 void Game::executeTurn()
 {
-    runBFSFindRoad();
     world.player.updateAction(world);
+    runBFSFindRoad();
 
     // 怪物回合
     for (auto& enemy : world.enemies) enemy->updateAction(world);
@@ -122,12 +130,13 @@ void Game::executeTurn()
         if (ev.type == EventType::MOVE)
         {
             // 移动事件
-            ev.actor->manager.move(ev.dx, ev.dy, world.map, ev.actor);
+            ev.actor->manager.move(ev.dx, ev.dy, world, ev.actor);
         }
         else if (ev.type == EventType::ATTACK)
         {
             // 攻击事件
-
+            ev.target->data.takeDamage(ev.actor->data.getDamage());
+            if (ev.target->data.isDead()) world.map.setEntityAt(ev.target->manager.getPos(), nullptr);
         }
         else
         {
