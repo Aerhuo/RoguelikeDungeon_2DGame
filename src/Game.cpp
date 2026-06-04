@@ -48,7 +48,7 @@ void Game::processEvents()
         }
 
         // 玩家按键响应
-        if (event.type == sf::Event::KeyPressed)
+        if (event.type == sf::Event::KeyPressed && world.player.data.canAct())
         {
             bool skip = false;
             int dx = 0, dy = 0;
@@ -62,7 +62,8 @@ void Game::processEvents()
             {
                 if (skip || world.player.handleInput(dx, dy, world))
                 {
-                    executeTurn();
+                    world.player.data.consumeEnergy();
+                    runBFSFindRoad();
                 }
             }
         }
@@ -71,6 +72,42 @@ void Game::processEvents()
 
 void Game::update()
 {
+    if (!world.eventQueue.empty())
+    {
+        resolveEvents();
+    }
+    
+    while (!world.player.data.canAct())
+    {
+        // 出现新事件，先进行处理
+        if (!world.eventQueue.empty())
+        {
+            break;
+        }
+
+        bool monsterActed = false;
+        for (auto& enemy : world.enemies)
+        {
+            if (enemy->data.canAct())
+            {
+                enemy->updateAction(world);
+                enemy->data.consumeEnergy();
+                monsterActed = true;
+                break; // 同时只允许一个怪物进行行动
+            }
+        }
+
+        // 推进时间轴
+        if (!monsterActed)
+        {
+            world.player.data.addEnergy();
+            for (auto& enemy : world.enemies)
+            {
+                enemy->data.addEnergy();
+            }
+        }
+    }
+
     if (world.player.data.isDead())
     {
         // 玩家死亡
@@ -113,14 +150,8 @@ void Game::render()
 }
 
 // 执行回合行为
-void Game::executeTurn()
+void Game::resolveEvents()
 {
-    world.player.updateAction(world);
-    runBFSFindRoad();
-
-    // 怪物回合
-    for (auto& enemy : world.enemies) enemy->updateAction(world);
-
     // 处理事件队列
     while (!world.eventQueue.empty())
     {

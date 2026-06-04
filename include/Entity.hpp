@@ -13,22 +13,38 @@ public:
     void init();
     bool isDead() const { return hp <= 0; }
 
+    // 战斗行为
+    void takeDamage(float rawDamage);
     int getDamage() const;
 
+    // 速度行为
+    bool canAct() const { return energy >= ActionThreshold; }
+    void consumeEnergy(int cost = ActionThreshold) { energy -= cost; }
+    void addEnergy() { energy += speed; }
+
+    // get器
+    float getHp() const { return hp; }
+    float getMaxHp() const { return maxHp; }
     float getRawDamage() const { return rawDamage; }
     int getTeam() const { return team; }
+    int getSpeed() const { return speed; }
 
+    // set器
     void setTeam(int team) { this->team = team; }
     void setMaxHp(float maxHp) { this->maxHp = maxHp; }
     void setMaxMp(float maxMp) { this->maxMp = maxMp; }
     void setDamage(float damage) { this->rawDamage = damage; }
-
-    void takeDamage(float rawDamage);
+    void setSpeed(int speed) { this->speed = speed; }
 private:
     float maxHp = 100.0, maxMp = 100.0;
     float hp = 100.0, mp = 100.0;
     float rawDamage = 20.0;
     int team = 1;
+
+    int speed = 10;
+    int energy = 0;
+
+    static const int ActionThreshold = 100;
 };
 
 class EntityManager

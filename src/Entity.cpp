@@ -68,21 +68,15 @@ bool EntityManager::move(int dx, int dy, World& world, Entity* self)
     sf::Vector2i cpos = sf::Vector2i(pos.x + dx, pos.y + dy);
 
     Entity* toEntity = world.map.getEntityAt(cpos);
-    if (world.map.getTerrainGridType(cpos)) // 目标位置可通行
-    {
-        if (toEntity != nullptr)
-        {
-            // 遇到敌对生物
 
-        }
-        else
-        {
-            // 可以直接通行
-            world.map.setEntityAt(pos, nullptr);
-            world.map.setEntityAt(cpos, self);
-            pos = cpos;
-            return true;
-        }
+    // 仍然判断一次目标位置是否已经存在实体
+    if (toEntity == nullptr)
+    {
+        // 可以直接通行
+        world.map.setEntityAt(pos, nullptr);
+        world.map.setEntityAt(cpos, self);
+        pos = cpos;
+        return true;
     }
 
     return false;

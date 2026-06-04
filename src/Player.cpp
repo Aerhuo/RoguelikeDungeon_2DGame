@@ -6,6 +6,7 @@ Player::Player()
     data.setMaxHp(100.0), data.setMaxMp(100.0);
     data.setDamage(20.0);
     data.setTeam(1);
+    data.setSpeed(20);
     data.init();
 
     manager.setColor(sf::Color::Blue);

@@ -182,3 +182,33 @@ sf::Vector2i Map::getRandomFloorTile() const
 
     return sf::Vector2i(-1, -1);
 }
+
+std::vector<Entity*> Map::getEntitiesInRadius(sf::Vector2i center, int radius, std::function<bool(Entity*)> filter)
+{
+    int startX = std::max(0, center.x - radius);
+    int endX = std::min(MapWidth - 1, center.x + radius);
+    int startY = std::max(0, center.y - radius);
+    int endY = std::min(MapHeight - 1, center.y + radius);
+
+    std::vector<Entity*> res;
+    for (int x = startX; x <= endX; ++x)
+    {
+        for (int y = startY; y <= endY; ++y)
+        {
+            int dx = center.x - x;
+            int dy = center.y - y;
+
+            if (dx * dx + dy * dy <= radius * radius)
+            {
+                // 在圆内
+                if (filter(entityGrids[x][y]))
+                {
+                    // 符合对象
+                    res.push_back(entityGrids[x][y]);
+                }
+            }
+        }
+    }
+
+    return res;
+}

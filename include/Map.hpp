@@ -2,10 +2,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <functional>
 
-const int TileSize = 8;
-const int MapWidth = 100;
-const int MapHeight = 100;
+static const int TileSize = 8;
+static const int MapWidth = 20;
+static const int MapHeight = 20;
 
 class Entity;
 
@@ -37,6 +38,8 @@ public:
     void setHeight(int height) { this->height = height; }
     void setTerrainGridType(sf::Vector2i pos, int val) { terrainGrids[pos.x][pos.y] = val; }
     void setEntityAt (sf::Vector2i pos, Entity* entity) { entityGrids[pos.x][pos.y] = entity; }
+
+    std::vector<Entity*> getEntitiesInRadius(sf::Vector2i center, int radius, std::function<bool(Entity*)> filter);
 
 private:
     int width, height, canWalkPercent, cellularAutoMataTimes;

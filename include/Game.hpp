@@ -19,7 +19,7 @@ private:
     void processEvents();
     void update();
     void render();
-    void executeTurn();
+    void resolveEvents();
     
     sf::RenderWindow window;
     sf::View camera;
