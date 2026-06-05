@@ -14,8 +14,6 @@ enum class EnemyState
 class Enemy : public Entity
 {
 protected:
-    sf::Vector2i lastDir = {0, 0};
-
     sf::Vector2i findWanderRoad(World& world);
 };
 

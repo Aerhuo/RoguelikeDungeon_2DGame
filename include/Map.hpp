@@ -4,9 +4,9 @@
 #include <vector>
 #include <functional>
 
-static const int TileSize = 8;
-static const int MapWidth = 20;
-static const int MapHeight = 20;
+static const int TileSize = 32;
+static const int MapWidth = 50;
+static const int MapHeight = 50;
 
 class Entity;
 
@@ -15,25 +15,27 @@ class Map
 public:
     Map(){};
     Map(int width, int height, int canWalkPercent = 57, int cellularAutoMataTimes = 3);
+    
     void generate();
-
+    void render(sf::RenderWindow& window);
+    bool canMove(sf::Vector2i pos) const;
+    sf::Vector2i getRandomFloorTile() const;
+    
+    // get器
+    int getWidth() const {return width; }
+    int getHeight() const { return height; }
+    Entity* getEntityAt(sf::Vector2i pos) const
+    {
+        if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height) return nullptr;
+        return entityGrids[pos.x][pos.y];
+    }
     int getTerrainGridType(sf::Vector2i pos) const 
     {
         if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height) return false;
         return terrainGrids[pos.x][pos.y];
     }
 
-    Entity* getEntityAt(sf::Vector2i pos) const
-    {
-        if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height) return nullptr;
-        return entityGrids[pos.x][pos.y];
-    }
-
-    void render(sf::RenderWindow& window);
-    sf::Vector2i getRandomFloorTile() const;
-    
-    int getWidth() const {return width; }
-    int getHeight() const { return height; }
+    // set器
     void setWidth(int width) { this->width = width; }
     void setHeight(int height) { this->height = height; }
     void setTerrainGridType(sf::Vector2i pos, int val) { terrainGrids[pos.x][pos.y] = val; }

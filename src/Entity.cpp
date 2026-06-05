@@ -1,5 +1,6 @@
 #include "Entity.hpp"
 #include "World.hpp"
+#include "Map.hpp"
 
 int EntityData::getDamage() const
 {
@@ -14,6 +15,12 @@ void EntityData::takeDamage(float rawDamage)
 void EntityData::init()
 {
     hp = maxHp, mp = maxMp;
+}
+
+Entity::Entity()
+{
+    data.setOwner(this);
+    manager.setOwner(this);
 }
 
 void Entity::spawn(Map& map)
@@ -63,10 +70,10 @@ void EntityManager::setPosition(sf::Vector2i pos)
     this->pos = pos;
 }
 
-bool EntityManager::move(int dx, int dy, World& world, Entity* self)
+bool EntityManager::move(int dx, int dy, World& world)
 {
+    dir = sf::Vector2i(dx, dy);
     sf::Vector2i cpos = sf::Vector2i(pos.x + dx, pos.y + dy);
-
     Entity* toEntity = world.map.getEntityAt(cpos);
 
     // 仍然判断一次目标位置是否已经存在实体
@@ -74,7 +81,7 @@ bool EntityManager::move(int dx, int dy, World& world, Entity* self)
     {
         // 可以直接通行
         world.map.setEntityAt(pos, nullptr);
-        world.map.setEntityAt(cpos, self);
+        world.map.setEntityAt(cpos, owner);
         pos = cpos;
         return true;
     }
@@ -84,8 +91,17 @@ bool EntityManager::move(int dx, int dy, World& world, Entity* self)
 
 void EntityManager::render(sf::RenderWindow& window)
 {
-    shape.setPosition(sf::Vector2f((float)pos.x * TileSize, (float)pos.y * TileSize));
-    window.draw(shape);
+    sf::View camera = window.getView();
+    int startX = std::max(0, (int)((camera.getCenter().x - camera.getSize().x / 2.0f) / TileSize));
+    int startY = std::max(0, (int)((camera.getCenter().y - camera.getSize().y / 2.0f) / TileSize));
+    int endX = std::min(MapWidth - 1, (int)((camera.getCenter().x + camera.getSize().x / 2.0f) / TileSize) + 1);
+    int endY = std::min(MapHeight - 1, (int)((camera.getCenter().y + camera.getSize().y / 2.0f) / TileSize) + 1);
+
+    if (startX <= pos.x && pos.x <= endX && startY <= pos.y && pos.y <= endY)
+    {
+        shape.setPosition(sf::Vector2f((float)pos.x * TileSize, (float)pos.y * TileSize));
+        window.draw(shape);
+    }
 }
 
 sf::Vector2i EntityManager::getPos() const

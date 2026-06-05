@@ -13,7 +13,10 @@ add_executable(MyGame ${SRC_FILES}
     src/Player.cpp
     src/Game.cpp
     src/Entity.cpp
-    src/Enemy.cpp)
+    src/Enemy.cpp
+    src/EnemyFactory.cpp
+    src/FOVEngine.cpp
+    src/FogManager.cpp)
 
 # 为目标 MyGame 链接头文件搜索路径
 target_include_directories(MyGame PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

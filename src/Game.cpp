@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "EnemyFactory.hpp"
 #include <queue>
 
 Game::Game() : world(MapWidth, MapHeight), window(sf::VideoMode(PixelX, PixelY), "First Stage")
@@ -17,13 +18,8 @@ Game::Game() : world(MapWidth, MapHeight), window(sf::VideoMode(PixelX, PixelY),
     world.player.spawn(world.map);
 
     // 生成怪物
-    world.enemies.push_back(std::make_unique<Slime>());
-
-    while (world.map.getEntityAt(pos) != nullptr) pos = world.map.getRandomFloorTile();
-    world.enemies.back()->manager.setPosition(pos);
-    world.enemies.back()->data.init();
-    world.enemies.back()->spawn(world.map);
-
+    EnemyFactory::spawnEnemies(world, EnemyType::SLIME, 5);
+    
     world.dist.resize(MapWidth, std::vector<int>(MapHeight));
 }
 
@@ -161,7 +157,7 @@ void Game::resolveEvents()
         if (ev.type == EventType::MOVE)
         {
             // 移动事件
-            ev.actor->manager.move(ev.dx, ev.dy, world, ev.actor);
+            ev.actor->manager.move(ev.dx, ev.dy, world);
         }
         else if (ev.type == EventType::ATTACK)
         {

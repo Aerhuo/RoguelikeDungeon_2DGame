@@ -56,11 +56,11 @@ sf::Vector2i Enemy::findWanderRoad(World& world)
         if (world.map.getTerrainGridType(dir + manager.getPos()) == 0) continue;
 
         int weight;
-        if (dir == lastDir)
+        if (dir == manager.getDir())
         {
             weight = 60;
         }
-        else if (dir == -lastDir)
+        else if (dir == -manager.getDir())
         {
             weight = 10;
         }
@@ -88,7 +88,6 @@ sf::Vector2i Enemy::findWanderRoad(World& world)
 
         if (curWeight > randomVal)
         {
-            lastDir = choice.dir;
             return choice.dir;
         }
     }

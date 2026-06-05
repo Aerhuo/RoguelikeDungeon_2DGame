@@ -9,6 +9,16 @@ Map::Map(int width, int height, int canWalkPercent, int cellularAutoMataTimes) :
     shape.setSize(sf::Vector2f(TileSize, TileSize));
 }
 
+bool Map::canMove(sf::Vector2i pos) const
+{
+    if (pos.x < 0 || pos.x >= MapWidth || pos.y < 0 || pos.y >= MapHeight)
+    {
+        return false;
+    }
+
+    return terrainGrids[pos.x][pos.y] != 0;
+}
+
 void Map::generate()
 {
     // 随机噪声函数
@@ -147,9 +157,15 @@ void Map::generate()
 
 void Map::render(sf::RenderWindow& window)
 {
-    for (int x = 0; x < width; ++x)
+    sf::View camera = window.getView();
+    int startX = std::max(0, (int)((camera.getCenter().x - camera.getSize().x / 2.0f) / TileSize));
+    int startY = std::max(0, (int)((camera.getCenter().y - camera.getSize().y / 2.0f) / TileSize));
+    int endX = std::min(width - 1, (int)((camera.getCenter().x + camera.getSize().x / 2.0f) / TileSize) + 1);
+    int endY = std::min(height - 1, (int)((camera.getCenter().y + camera.getSize().y / 2.0f) / TileSize) + 1);
+
+    for (int x = startX; x <= endX; ++x)
     {
-        for (int y = 0; y < height; ++y)
+        for (int y = startY; y <= endY; ++y)
         {
             if (terrainGrids[x][y] == 0)
             {
