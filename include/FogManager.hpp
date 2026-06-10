@@ -1,10 +1,9 @@
 #pragma once
 #include <vector>
-#include "FOVEngine.hpp"
-#include "Map.hpp"
 #include <SFML/Graphics.hpp>
 
 class Player;
+class World;
 
 enum class FogState
 {
@@ -30,6 +29,7 @@ public:
     // set器
 
 private:
+    std::vector<sf::Vector2i> visibleCells;
     std::vector<std::vector<FogState>> grids;
     Player* owner;
     int width, height;

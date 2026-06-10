@@ -1,5 +1,7 @@
 #include "FogManager.hpp"
 #include "Player.hpp"
+#include "World.hpp"
+#include "FOVEngine.hpp"
 
 FogManager::FogManager(Player* player) : owner(player)
 {
@@ -13,18 +15,19 @@ void FogManager::init(int width, int height)
 
 void FogManager::update(World* world)
 {
-    for (int x = 0; x < width; ++x)
+    for (const auto& pos : visibleCells)
     {
-        for (int y = 0; y < height; ++y)
-        {
-            if (grids[x][y] == FogState::VISIBLE) grids[x][y] = FogState::EXPLORED;
-        }
+        grids[pos.x][pos.y] = FogState::EXPLORED;
     }
+    visibleCells.clear();
 
     auto filter = [&](sf::Vector2i pos) -> void
     {
-        if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height) return;
-        grids[pos.x][pos.y] = FogState::VISIBLE;
+        if (grids[pos.x][pos.y] != FogState::VISIBLE)
+        {
+            grids[pos.x][pos.y] = FogState::VISIBLE;
+            visibleCells.push_back(pos);
+        }
     };
 
     FOVEngine::calculateFOV(owner->manager.getPos(), owner->manager.getDir(), owner->data.getFOV(), filter, world);

@@ -2,6 +2,7 @@
 #include "World.hpp"
 #include "FogManager.hpp"
 #include "Map.hpp"
+#include "Event.hpp"
 
 int EntityData::getDamage() const
 {
@@ -16,6 +17,12 @@ void EntityData::takeDamage(float rawDamage)
 void EntityData::init()
 {
     hp = maxHp, mp = maxMp;
+}
+
+EntityManager::EntityManager() : shape(sf::Vector2f(TileSize, TileSize))
+{
+    shape.setSize(sf::Vector2f(TileSize, TileSize));
+    shape.setFillColor(sf::Color::Blue);
 }
 
 Entity::Entity()
@@ -59,12 +66,6 @@ bool Entity::bump(int dx, int dy, World& world)
     world.eventQueue.push(ev);
 
     return true;
-}
-
-EntityManager::EntityManager()
-{
-    shape.setSize(sf::Vector2f(TileSize, TileSize));
-    shape.setFillColor(sf::Color::Blue);
 }
 
 void EntityManager::setPosition(sf::Vector2i pos)

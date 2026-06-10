@@ -16,11 +16,15 @@ add_executable(MyGame ${SRC_FILES}
     src/Enemy.cpp
     src/World.cpp
     src/EnemyFactory.cpp
-    src/FOVEngine.cpp
-    src/FogManager.cpp)
+    src/FogManager.cpp
+    src/UIManager.cpp)
 
 # 为目标 MyGame 链接头文件搜索路径
 target_include_directories(MyGame PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # 为目标 MyGame 链接 SFML 的库文件
 target_link_libraries(MyGame PRIVATE sfml-graphics sfml-window sfml-system)
+
+# 将根目录下的 assets 文件夹，拷贝到生成 .exe 的目录中
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

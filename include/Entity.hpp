@@ -2,10 +2,10 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <memory>
-#include "Map.hpp"
-#include "Event.hpp"
 
 struct World;
+class Entity;
+class Map;
 
 class EntityData
 {
@@ -24,8 +24,10 @@ public:
     void addEnergy() { energy += speed; }
 
     // get器
-    float getHp() const { return hp; }
-    float getMaxHp() const { return maxHp; }
+    float getHP() const { return hp; }
+    float getMaxHP() const { return maxHp; }
+    float getMP() const { return mp; }
+    float getMaxMP() const { return maxMp; }
     float getRawDamage() const { return rawDamage; }
     int getTeam() const { return team; }
     int getSpeed() const { return speed; }
@@ -63,7 +65,7 @@ public:
 
     void render(sf::RenderWindow& window, const World& world);
     
-    bool move(int dx, int dy, World& map);
+    bool move(int dx, int dy, World& world);
 
     // get器
     sf::Vector2i getDir() const { return dir; }
@@ -78,7 +80,7 @@ public:
 
 private:
     sf::Vector2i pos;
-    sf::RectangleShape shape = sf::RectangleShape(sf::Vector2f(TileSize, TileSize));
+    sf::RectangleShape shape;
     sf::Vector2i dir = {-1, 0};
     
     Entity* owner;

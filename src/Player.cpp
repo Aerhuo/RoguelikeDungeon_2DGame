@@ -1,5 +1,7 @@
 #include "Player.hpp"
 #include "World.hpp"
+#include "Map.hpp"
+#include "Event.hpp"
 
 Player::Player() : fogManager(this)
 {
@@ -7,7 +9,7 @@ Player::Player() : fogManager(this)
     data.setDamage(20.0);
     data.setTeam(1);
     data.setSpeed(20);
-    data.setFOV(5);
+    data.setFOV(7);
     data.init();
 
     manager.setColor(sf::Color::Blue);

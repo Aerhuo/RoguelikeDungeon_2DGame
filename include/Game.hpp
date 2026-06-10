@@ -5,8 +5,9 @@
 #include "World.hpp"
 #include "Enemy.hpp"
 #include "Player.hpp"
+#include "UIManager.hpp"
 
-const int PixelX = 720;
+const int PixelX = 1080;
 const int PixelY = 720;
 
 class Game
@@ -23,6 +24,7 @@ private:
     
     sf::RenderWindow window;
     sf::View camera;
+    UIManager ui;
 
     World world;
     void runBFSFindRoad();

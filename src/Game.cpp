@@ -5,9 +5,13 @@
 Game::Game(int width, int height) : world(width, height), window(sf::VideoMode(PixelX, PixelY), "First Stage")
 {
     window.setFramerateLimit(60);
-    camera.setSize(PixelX, PixelY);
+    camera.setSize(PixelX * .8f, PixelY * .8f);
+    camera.setViewport(sf::FloatRect(.0f, .0f, .8f, .8f));
 
     world.init();
+
+    ui.bindPlayerData(&world.player.data);
+    ui.init();
 
     // 生成怪物
     EnemyFactory::spawnEnemies(world, EnemyType::SLIME, 5);
@@ -125,6 +129,8 @@ void Game::update()
     float pixelX = world.player.manager.getPos().x * TileSize + TileSize / 2.0f;
     float pixelY = world.player.manager.getPos().y * TileSize + TileSize / 2.0f;
     camera.setCenter(pixelX, pixelY);
+
+    ui.update();
 }
 
 // 渲染各种图层
@@ -137,6 +143,8 @@ void Game::render()
     world.player.manager.render(window, world);
 
     for (int i = 0; i < (int)world.enemies.size(); ++i) world.enemies[i]->manager.render(window, world);
+
+    ui.render(window);
 
     window.display();
 }
@@ -160,6 +168,7 @@ void Game::resolveEvents()
         {
             // 攻击事件
             ev.target->data.takeDamage(ev.actor->data.getDamage());
+            if (ev.actor->data.isPlayer()) world.fovDirty = true;
             if (ev.target->data.isDead()) world.map.setEntityAt(ev.target->manager.getPos(), nullptr);
         }
         else

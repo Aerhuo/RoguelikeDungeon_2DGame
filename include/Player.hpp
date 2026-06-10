@@ -1,6 +1,5 @@
 #pragma once
 #include "Entity.hpp"
-#include "Map.hpp"
 #include <queue>
 #include <SFML/Graphics.hpp>
 #include "FogManager.hpp"

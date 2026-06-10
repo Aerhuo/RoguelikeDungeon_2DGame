@@ -1,5 +1,7 @@
 #include "Enemy.hpp"
 #include "World.hpp"
+#include "Map.hpp"
+#include "Event.hpp"
 
 Slime::Slime()
 {
