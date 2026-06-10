@@ -2,25 +2,15 @@
 #include "EnemyFactory.hpp"
 #include <queue>
 
-Game::Game() : world(MapWidth, MapHeight), window(sf::VideoMode(PixelX, PixelY), "First Stage")
+Game::Game(int width, int height) : world(width, height), window(sf::VideoMode(PixelX, PixelY), "First Stage")
 {
     window.setFramerateLimit(60);
     camera.setSize(PixelX, PixelY);
 
-    world.map.generate();
-    
-    sf::Vector2i pos = world.map.getRandomFloorTile();
-
-    // 生成玩家
-    while (world.map.getEntityAt(pos) != nullptr) pos = world.map.getRandomFloorTile();
-    world.player.manager.setPosition(pos);
-    world.player.data.init();
-    world.player.spawn(world.map);
+    world.init();
 
     // 生成怪物
     EnemyFactory::spawnEnemies(world, EnemyType::SLIME, 5);
-    
-    world.dist.resize(MapWidth, std::vector<int>(MapHeight));
 }
 
 void Game::run()
@@ -58,7 +48,7 @@ void Game::processEvents()
             {
                 if (skip || world.player.handleInput(dx, dy, world))
                 {
-                    world.player.data.consumeEnergy();
+                    world.player.updateAction(world);
                     runBFSFindRoad();
                 }
             }
@@ -71,6 +61,13 @@ void Game::update()
     if (!world.eventQueue.empty())
     {
         resolveEvents();
+
+        // 更新迷雾
+        if (world.fovDirty)
+        {
+            world.player.fogManager.update(&world);
+            world.fovDirty = false;
+        }
     }
     
     while (!world.player.data.canAct())
@@ -87,7 +84,6 @@ void Game::update()
             if (enemy->data.canAct())
             {
                 enemy->updateAction(world);
-                enemy->data.consumeEnergy();
                 monsterActed = true;
                 break; // 同时只允许一个怪物进行行动
             }
@@ -137,10 +133,10 @@ void Game::render()
     window.clear();
     window.setView(camera);
 
-    world.map.render(window);
-    world.player.manager.render(window);
+    world.map.render(window, world);
+    world.player.manager.render(window, world);
 
-    for (int i = 0; i < (int)world.enemies.size(); ++i) world.enemies[i]->manager.render(window);
+    for (int i = 0; i < (int)world.enemies.size(); ++i) world.enemies[i]->manager.render(window, world);
 
     window.display();
 }
@@ -158,6 +154,7 @@ void Game::resolveEvents()
         {
             // 移动事件
             ev.actor->manager.move(ev.dx, ev.dy, world);
+            if (ev.actor->data.isPlayer()) world.fovDirty = true;
         }
         else if (ev.type == EventType::ATTACK)
         {
@@ -201,7 +198,7 @@ void Game::runBFSFindRoad()
             for (auto& dir : dirs)
             {
                 int cx = x + dir[0], cy = y + dir[1];
-                if (cx < 0 || cx >= MapWidth || cy < 0 || cy >= MapHeight) continue;
+                if (cx < 0 || cx >= world.map.getWidth() || cy < 0 || cy >= world.map.getHeight()) continue;
                 if (world.dist[cx][cy] != 1e9) continue;
                 if (world.map.getTerrainGridType(sf::Vector2i(cx, cy)) == 0) continue;
 

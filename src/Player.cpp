@@ -1,12 +1,13 @@
 #include "Player.hpp"
 #include "World.hpp"
 
-Player::Player()
+Player::Player() : fogManager(this)
 {
     data.setMaxHp(100.0), data.setMaxMp(100.0);
     data.setDamage(20.0);
     data.setTeam(1);
     data.setSpeed(20);
+    data.setFOV(5);
     data.init();
 
     manager.setColor(sf::Color::Blue);
@@ -14,7 +15,7 @@ Player::Player()
 
 void Player::updateAction(World& world)
 {
-
+    data.consumeEnergy();
 }
 
 void Player::dead(World& World, sf::RenderWindow& window)

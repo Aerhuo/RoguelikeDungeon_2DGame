@@ -12,6 +12,7 @@ class EntityData
 public:
     void init();
     bool isDead() const { return hp <= 0; }
+    bool isPlayer() const { return team == 1; }
 
     // 战斗行为
     void takeDamage(float rawDamage);
@@ -28,6 +29,7 @@ public:
     float getRawDamage() const { return rawDamage; }
     int getTeam() const { return team; }
     int getSpeed() const { return speed; }
+    int getFOV() const { return fov; }
     Entity* getOwner() const { return owner; }
 
     // set器
@@ -36,6 +38,7 @@ public:
     void setMaxMp(float maxMp) { this->maxMp = maxMp; }
     void setDamage(float damage) { this->rawDamage = damage; }
     void setSpeed(int speed) { this->speed = speed; }
+    void setFOV(int fov) { this->fov = fov; }
     void setOwner(Entity* entity) { this->owner = entity; }
 
 private:
@@ -58,7 +61,7 @@ class EntityManager
 public:
     EntityManager();
 
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderWindow& window, const World& world);
     
     bool move(int dx, int dy, World& map);
 
@@ -76,7 +79,7 @@ public:
 private:
     sf::Vector2i pos;
     sf::RectangleShape shape = sf::RectangleShape(sf::Vector2f(TileSize, TileSize));
-    sf::Vector2i dir = {0, 0};
+    sf::Vector2i dir = {-1, 0};
     
     Entity* owner;
 };

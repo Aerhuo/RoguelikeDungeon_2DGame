@@ -6,6 +6,7 @@ Slime::Slime()
     data.setMaxHp(10.0), data.setMaxMp(10.0);
     data.setDamage(10.0);
     data.setTeam(2);
+    data.setFOV(5);
     data.init();
 
     manager.setColor(sf::Color::Red);
@@ -97,6 +98,7 @@ sf::Vector2i Enemy::findWanderRoad(World& world)
 
 void Slime::updateAction(World& world)
 {
+    data.consumeEnergy();
     auto fliter = [&](Entity* entity) -> bool
     {
         if (entity == nullptr) return false;

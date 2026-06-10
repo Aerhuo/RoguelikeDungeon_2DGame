@@ -1,5 +1,6 @@
 #include "Entity.hpp"
 #include "World.hpp"
+#include "FogManager.hpp"
 #include "Map.hpp"
 
 int EntityData::getDamage() const
@@ -35,7 +36,8 @@ void Entity::spawn(Map& map)
 bool Entity::bump(int dx, int dy, World& world)
 {
     sf::Vector2i toPos = sf::Vector2i(manager.getPos().x + dx, manager.getPos().y + dy);
-    if (world.map.getTerrainGridType(toPos) == 0) return false; // 无法移动则取消行动
+    manager.setDir(sf::Vector2i{dx, dy});
+    if (!world.map.canMove(toPos)) return false; // 无法移动则取消行动
 
     Entity* enemy = world.map.getEntityAt(toPos);
     Event ev;
@@ -72,7 +74,6 @@ void EntityManager::setPosition(sf::Vector2i pos)
 
 bool EntityManager::move(int dx, int dy, World& world)
 {
-    dir = sf::Vector2i(dx, dy);
     sf::Vector2i cpos = sf::Vector2i(pos.x + dx, pos.y + dy);
     Entity* toEntity = world.map.getEntityAt(cpos);
 
@@ -89,13 +90,14 @@ bool EntityManager::move(int dx, int dy, World& world)
     return false;
 }
 
-void EntityManager::render(sf::RenderWindow& window)
+void EntityManager::render(sf::RenderWindow& window, const World& world)
 {
+    if (world.player.fogManager.getStateAt(pos) != FogState::VISIBLE) return;
     sf::View camera = window.getView();
     int startX = std::max(0, (int)((camera.getCenter().x - camera.getSize().x / 2.0f) / TileSize));
     int startY = std::max(0, (int)((camera.getCenter().y - camera.getSize().y / 2.0f) / TileSize));
-    int endX = std::min(MapWidth - 1, (int)((camera.getCenter().x + camera.getSize().x / 2.0f) / TileSize) + 1);
-    int endY = std::min(MapHeight - 1, (int)((camera.getCenter().y + camera.getSize().y / 2.0f) / TileSize) + 1);
+    int endX = std::min(world.map.getWidth() - 1, (int)((camera.getCenter().x + camera.getSize().x / 2.0f) / TileSize) + 1);
+    int endY = std::min(world.map.getHeight() - 1, (int)((camera.getCenter().y + camera.getSize().y / 2.0f) / TileSize) + 1);
 
     if (startX <= pos.x && pos.x <= endX && startY <= pos.y && pos.y <= endY)
     {

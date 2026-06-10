@@ -18,5 +18,8 @@ struct World
     std::vector<std::unique_ptr<Entity>> enemies;
     Player player;
 
-    World(int width, int height) : map(width, height) {}
+    bool fovDirty = true;
+
+    void init();
+    World(int width, int height);
 };

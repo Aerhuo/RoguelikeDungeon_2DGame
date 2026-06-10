@@ -1,4 +1,5 @@
 #include "Map.hpp"
+#include "World.hpp"
 #include <cstdlib>
 #include <queue>
 
@@ -155,7 +156,7 @@ void Map::generate()
     runFloodFill();
 }
 
-void Map::render(sf::RenderWindow& window)
+void Map::render(sf::RenderWindow& window, const World& world)
 {
     sf::View camera = window.getView();
     int startX = std::max(0, (int)((camera.getCenter().x - camera.getSize().x / 2.0f) / TileSize));
@@ -167,17 +168,34 @@ void Map::render(sf::RenderWindow& window)
     {
         for (int y = startY; y <= endY; ++y)
         {
-            if (terrainGrids[x][y] == 0)
+            sf::Vector2i pos = sf::Vector2i(x, y);
+            FogState state = world.player.fogManager.getStateAt(pos);
+            shape.setPosition((sf::Vector2f)pos * (float)TileSize);
+
+            if (state == FogState::UNSEEN)
             {
                 shape.setFillColor(sf::Color::Black);
+                window.draw(shape);
             }
             else
             {
-                shape.setFillColor(sf::Color::Green);
-            }
+                if (canMove(pos))
+                {
+                    shape.setFillColor(sf::Color::Green);
+                }
+                else
+                {
+                    shape.setFillColor(sf::Color(100, 100, 100));
+                }
 
-            shape.setPosition(sf::Vector2f((float)x * TileSize, (float)y * TileSize));
-            window.draw(shape);
+                window.draw(shape);
+
+                if (state == FogState::EXPLORED)
+                {
+                    shape.setFillColor(sf::Color(0, 0, 0, 150));
+                    window.draw(shape);
+                }
+            }
         }
     }
 }
@@ -202,9 +220,9 @@ sf::Vector2i Map::getRandomFloorTile() const
 std::vector<Entity*> Map::getEntitiesInRadius(sf::Vector2i center, int radius, std::function<bool(Entity*)> filter)
 {
     int startX = std::max(0, center.x - radius);
-    int endX = std::min(MapWidth - 1, center.x + radius);
+    int endX = std::min(width - 1, center.x + radius);
     int startY = std::max(0, center.y - radius);
-    int endY = std::min(MapHeight - 1, center.y + radius);
+    int endY = std::min(height - 1, center.y + radius);
 
     std::vector<Entity*> res;
     for (int x = startX; x <= endX; ++x)

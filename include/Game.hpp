@@ -12,7 +12,7 @@ const int PixelY = 720;
 class Game
 {
 public:
-    Game();
+    Game(int width, int height);
     void run();
 
 private:

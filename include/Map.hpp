@@ -10,6 +10,8 @@ static const int MapHeight = 50;
 
 class Entity;
 
+struct World;
+
 class Map
 {
 public:
@@ -17,7 +19,7 @@ public:
     Map(int width, int height, int canWalkPercent = 57, int cellularAutoMataTimes = 3);
     
     void generate();
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderWindow& window, const World& world);
     bool canMove(sf::Vector2i pos) const;
     sf::Vector2i getRandomFloorTile() const;
     

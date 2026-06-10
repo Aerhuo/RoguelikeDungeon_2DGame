@@ -16,12 +16,13 @@ enum class FogState
 class FogManager
 {
 public:
-    FogManager(int width, int height, Player* player);
+    FogManager(Player* player);
 
-    void update(World& world);
+    void init(int width, int height);
+    void update(World* world);
 
     // get器
-    FogState getStateAt(sf::Vector2i pos)
+    FogState getStateAt(sf::Vector2i pos) const
     {
         if (pos.x < 0 || pos.x >= width || pos.y < 0 || pos.y >= height) return FogState::UNSEEN;
         return grids[pos.x][pos.y];
@@ -30,6 +31,6 @@ public:
 
 private:
     std::vector<std::vector<FogState>> grids;
-    Player* player;
+    Player* owner;
     int width, height;
 };

@@ -14,6 +14,7 @@ add_executable(MyGame ${SRC_FILES}
     src/Game.cpp
     src/Entity.cpp
     src/Enemy.cpp
+    src/World.cpp
     src/EnemyFactory.cpp
     src/FOVEngine.cpp
     src/FogManager.cpp)
