@@ -15,7 +15,7 @@ public:
     bool isPlayer() const { return team == 1; }
 
     // 战斗行为
-    void takeDamage(float rawDamage);
+    float takeDamage(float rawDamage);
     int getDamage() const;
 
     // 速度行为
@@ -32,9 +32,11 @@ public:
     int getTeam() const { return team; }
     int getSpeed() const { return speed; }
     int getFOV() const { return fov; }
+    std::wstring getName() const { return name; }
     Entity* getOwner() const { return owner; }
 
     // set器
+    void setName(std::wstring name) { this->name = name; }
     void setTeam(int team) { this->team = team; }
     void setMaxHp(float maxHp) { this->maxHp = maxHp; }
     void setMaxMp(float maxMp) { this->maxMp = maxMp; }
@@ -44,6 +46,8 @@ public:
     void setOwner(Entity* entity) { this->owner = entity; }
 
 private:
+    std::wstring name;
+
     float maxHp = 100.0, maxMp = 100.0;
     float hp = 100.0, mp = 100.0;
     float rawDamage = 20.0;

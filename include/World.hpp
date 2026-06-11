@@ -20,6 +20,11 @@ struct World
 
     bool fovDirty = true;
 
+    int currentFloor = 0;
+    bool isChangingFloor = false;
+
+    void generateNextFloor();
+
     void init();
-    World(int width, int height);
+    World();
 };

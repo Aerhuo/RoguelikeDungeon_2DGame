@@ -2,7 +2,7 @@
 #include "EnemyFactory.hpp"
 #include <queue>
 
-Game::Game(int width, int height) : world(width, height), window(sf::VideoMode(PixelX, PixelY), "First Stage")
+Game::Game(int width, int height) : window(sf::VideoMode(PixelX, PixelY), "First Stage")
 {
     window.setFramerateLimit(60);
     camera.setSize(PixelX * .8f, PixelY * .8f);
@@ -12,9 +12,6 @@ Game::Game(int width, int height) : world(width, height), window(sf::VideoMode(P
 
     ui.bindPlayerData(&world.player.data);
     ui.init();
-
-    // 生成怪物
-    EnemyFactory::spawnEnemies(world, EnemyType::SLIME, 5);
 }
 
 void Game::run()
@@ -50,6 +47,14 @@ void Game::processEvents()
 
             if (skip || dx != 0 || dy != 0)
             {
+                if (skip)
+                {
+                    Event ev;
+                    ev.actor = &world.player;
+                    ev.type = EventType::CHECK;
+                    world.eventQueue.push(ev);
+                }
+
                 if (skip || world.player.handleInput(dx, dy, world))
                 {
                     world.player.updateAction(world);
@@ -69,7 +74,7 @@ void Game::update()
         // 更新迷雾
         if (world.fovDirty)
         {
-            world.player.fogManager.update(&world);
+            world.player.fogManager.update(world);
             world.fovDirty = false;
         }
     }
@@ -79,13 +84,20 @@ void Game::update()
         // 出现新事件，先进行处理
         if (!world.eventQueue.empty())
         {
-            break;
+            resolveEvents();
+
+            // 更新迷雾
+            if (world.fovDirty)
+            {
+                world.player.fogManager.update(world);
+                world.fovDirty = false;
+            }
         }
 
         bool monsterActed = false;
         for (auto& enemy : world.enemies)
         {
-            if (enemy->data.canAct())
+            if (!enemy->data.isDead() && enemy->data.canAct())
             {
                 enemy->updateAction(world);
                 monsterActed = true;
@@ -99,15 +111,22 @@ void Game::update()
             world.player.data.addEnergy();
             for (auto& enemy : world.enemies)
             {
+                if (enemy->data.isDead()) continue;
                 enemy->data.addEnergy();
             }
         }
     }
 
-    if (world.player.data.isDead())
+    if (!world.eventQueue.empty())
     {
-        // 玩家死亡
-        world.player.dead(world, window);
+        resolveEvents();
+
+        // 更新迷雾
+        if (world.fovDirty)
+        {
+            world.player.fogManager.update(world);
+            world.fovDirty = false;
+        }
     }
 
     // 判断怪物死亡
@@ -115,7 +134,6 @@ void Game::update()
     {
         if (world.enemies[i]->data.isDead())
         {
-            world.enemies[i]->dead(world, window);
             swap(world.enemies[i], world.enemies.back());
             world.enemies.pop_back();
         }
@@ -131,6 +149,13 @@ void Game::update()
     camera.setCenter(pixelX, pixelY);
 
     ui.update();
+
+    // 玩家前往下一层
+    if (world.isChangingFloor)
+    {
+        world.generateNextFloor();
+        world.isChangingFloor = false;
+    }
 }
 
 // 渲染各种图层
@@ -167,14 +192,39 @@ void Game::resolveEvents()
         else if (ev.type == EventType::ATTACK)
         {
             // 攻击事件
-            ev.target->data.takeDamage(ev.actor->data.getDamage());
+            ev.damage = ev.target->data.takeDamage(ev.actor->data.getDamage());
             if (ev.actor->data.isPlayer()) world.fovDirty = true;
-            if (ev.target->data.isDead()) world.map.setEntityAt(ev.target->manager.getPos(), nullptr);
+            if (ev.target->data.isDead())
+            {
+                world.map.setEntityAt(ev.target->manager.getPos(), nullptr);
+
+                Event newEv;
+                newEv.actor = ev.target;
+                newEv.type = EventType::DEAD;
+                world.eventQueue.push(newEv);
+            }
+        }
+        else if (ev.type == EventType::DEAD)
+        {
+            // 死亡事件
+            ev.actor->dead(world, window);
+        }
+        else if (ev.type == EventType::CHECK)
+        {
+            // 玩家观察事件 (Enter)
+            TileType type = world.map.getTerrainGridType(ev.actor->manager.getPos());
+            if (type == TileType::STAIRS_DOWN)
+            {
+                // 位于下层楼梯时
+                world.isChangingFloor = true;
+            }
         }
         else
         {
 
         }
+
+        ui.triggerEvent(ev);
     }
 }
 
@@ -209,7 +259,7 @@ void Game::runBFSFindRoad()
                 int cx = x + dir[0], cy = y + dir[1];
                 if (cx < 0 || cx >= world.map.getWidth() || cy < 0 || cy >= world.map.getHeight()) continue;
                 if (world.dist[cx][cy] != 1e9) continue;
-                if (world.map.getTerrainGridType(sf::Vector2i(cx, cy)) == 0) continue;
+                if (!world.map.canMove(sf::Vector2i(cx, cy))) continue;
 
                 world.dist[cx][cy] = world.dist[x][y] + 1;
                 q.push({cx, cy});

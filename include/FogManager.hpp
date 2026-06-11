@@ -18,7 +18,7 @@ public:
     FogManager(Player* player);
 
     void init(int width, int height);
-    void update(World* world);
+    void update(World& world);
 
     // get器
     FogState getStateAt(sf::Vector2i pos) const

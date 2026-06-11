@@ -1,6 +1,7 @@
 #include "UIManager.hpp"
 #include "Entity.hpp"
 #include "Game.hpp"
+#include "Event.hpp"
 
 UIManager::UIManager(){}
 
@@ -11,7 +12,7 @@ void UIManager::bindPlayerData(const EntityData* data)
 
 bool UIManager::init()
 {
-    if (!font.loadFromFile("assets/fonts/arial.ttf"))
+    if (!font.loadFromFile("assets/fonts/MSYH.TTC"))
     {
         return false;
     }
@@ -23,6 +24,10 @@ bool UIManager::init()
     bottomPanel.setSize(sf::Vector2f(PixelX, PixelY * .2f));
     bottomPanel.setPosition(.0f, PixelY * .8f);
     bottomPanel.setFillColor(sf::Color(20, 20, 20));
+
+    messageText.setFont(font);
+    messageText.setCharacterSize(20);
+    messageText.setFillColor(sf::Color::Yellow);
 
     hpText.setFont(font);
     hpText.setCharacterSize(20);
@@ -80,5 +85,38 @@ void UIManager::render(sf::RenderWindow& window)
     window.draw(hpText);
     window.draw(mpText);
 
+    while (messages.size() > maxMessagesCount) messages.pop_front();
+
+    int idx = 0;
+    for (auto& text : messages)
+    {
+        messageText.setPosition(sf::Vector2f(20.0f, PixelY * .8f + 10.0f + 25.0f * idx));
+        messageText.setString(text);
+        window.draw(messageText);
+        idx++;
+    }
+
     window.setView(view);
+}
+
+void UIManager::triggerEvent(Event& event)
+{
+    switch (event.type)
+    {
+        case EventType::ATTACK:
+        {
+            messages.push_back(event.actor->data.getName() + L"攻击了" + event.target->data.getName() + L", 并造成了" + std::to_wstring((int)event.damage) + L"点伤害！");
+            break;
+        }
+        case EventType::MOVE:
+        {
+            break;
+        }
+        case EventType::DEAD:
+        {
+            messages.push_back(event.actor->data.getName() + L"死了！");
+            break;
+        }
+        default: break;
+    }
 }

@@ -10,7 +10,7 @@ class FOVEngine
 public:
     // 计算视野
     template<typename Func>
-    static void calculateFOV(sf::Vector2i center, sf::Vector2i dir, int radius, Func onVisible, World* world)
+    static void calculateFOV(sf::Vector2i center, sf::Vector2i dir, int radius, Func onVisible, World& world)
     {
         int startX = std::max(0, center.x - radius * (dir.x <= 0));
         int startY = std::max(0, center.y - radius * (dir.y <= 0));
@@ -33,7 +33,7 @@ public:
 
 private:
     template<typename Func>
-    static void castRay(sf::Vector2i start, sf::Vector2i end, int radius2, Func onVisible, World* world)
+    static void castRay(sf::Vector2i start, sf::Vector2i end, int radius2, Func onVisible, World& world)
     {
         int x0 = start.x, y0 = start.y;
         int x1 = end.x, y1 = end.y;
@@ -45,7 +45,7 @@ private:
         int err = dx - dy;
         while (true)
         {
-            if (x0 < 0 || x0 >= world->map.getWidth() || y0 < 0 || y0 >= world->map.getHeight()) break;
+            if (x0 < 0 || x0 >= world.map.getWidth() || y0 < 0 || y0 >= world.map.getHeight()) break;
 
             int dist = (x0 - start.x) * (x0 - start.x) + (y0 - start.y) * (y0 - start.y);
             if (dist <= radius2)
@@ -53,7 +53,7 @@ private:
                 onVisible(sf::Vector2i(x0, y0));
             }
 
-            if (!world->map.canMove(sf::Vector2i(x0, y0))) break;
+            if (!world.map.canMove(sf::Vector2i(x0, y0))) break;
             if (sf::Vector2i(x0, y0) == end) break;
 
             int e2 = err * 2;

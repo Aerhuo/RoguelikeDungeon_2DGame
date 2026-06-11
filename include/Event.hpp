@@ -5,7 +5,9 @@ class Entity;
 enum class EventType
 {
     MOVE,
-    ATTACK
+    ATTACK,
+    DEAD,
+    CHECK
 };
 
 struct Event
@@ -14,4 +16,5 @@ struct Event
     Entity* target;
     EventType type;
     int dx, dy;
+    float damage;
 };

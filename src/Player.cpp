@@ -5,6 +5,7 @@
 
 Player::Player() : fogManager(this)
 {
+    data.setName(L"你");
     data.setMaxHp(100.0), data.setMaxMp(100.0);
     data.setDamage(20.0);
     data.setTeam(1);

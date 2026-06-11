@@ -9,11 +9,14 @@ FogManager::FogManager(Player* player) : owner(player)
 
 void FogManager::init(int width, int height)
 {
+    grids.clear();
+    visibleCells.clear();
+    
     this->width = width, this->height = height;
     grids.resize(width, std::vector<FogState>(height));
 }
 
-void FogManager::update(World* world)
+void FogManager::update(World& world)
 {
     for (const auto& pos : visibleCells)
     {

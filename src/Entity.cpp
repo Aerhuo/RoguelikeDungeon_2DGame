@@ -9,9 +9,12 @@ int EntityData::getDamage() const
     return rawDamage;
 }
 
-void EntityData::takeDamage(float rawDamage)
+float EntityData::takeDamage(float rawDamage)
 {
-    hp -= rawDamage;
+    float damage = rawDamage;
+    hp -= damage;
+
+    return damage;
 }
 
 void EntityData::init()
@@ -33,10 +36,10 @@ Entity::Entity()
 
 void Entity::spawn(Map& map)
 {
+    map.setEntityAt(manager.getPos(), this);
     if (!spawned)
     {
         spawned = true;
-        map.setEntityAt(manager.getPos(), this);
     }
 }
 
@@ -57,7 +60,7 @@ bool Entity::bump(int dx, int dy, World& world)
         ev.type = EventType::ATTACK;
         ev.target = enemy;
     }
-    else
+    else if (enemy == nullptr)
     {
         // 如果目标位置可通行且不存在敌人
         ev.type = EventType::MOVE;

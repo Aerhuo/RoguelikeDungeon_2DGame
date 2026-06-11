@@ -5,6 +5,7 @@
 
 Slime::Slime()
 {
+    data.setName(L"史莱姆");
     data.setMaxHp(10.0), data.setMaxMp(10.0);
     data.setDamage(10.0);
     data.setTeam(2);
@@ -24,12 +25,19 @@ sf::Vector2i findPlayerRoad(const EntityManager& manager, const World& world)
     int x = manager.getPos().x, y = manager.getPos().y;
     for (auto& dir : dirs)
     {
-        if (world.dist[x + dir[0]][y + dir[1]] < world.dist[x + cur[0]][y + cur[1]])
+        sf::Vector2i toPos = sf::Vector2i(x + dir[0], y + dir[1]);
+        if (toPos.x < 0 || toPos.x >= world.map.getWidth() || toPos.y < 0 || toPos.y >= world.map.getHeight()) continue;
+
+        Entity* entity = world.map.getEntityAt(toPos);
+        if (entity != nullptr && entity->data.getTeam() == manager.getOwner()->data.getTeam()) continue;
+        if (!world.map.canMove(toPos)) continue;;
+
+        if (world.dist[toPos.x][toPos.y] < world.dist[x + cur[0]][y + cur[1]] || cur == std::vector{0, 0})
         {
             cur = dir;
         }
 
-        if (world.dist[x + dir[0]][y + dir[1]] == world.dist[x + cur[0]][y + cur[1]] && rand() % 100 < 50)
+        if (world.dist[toPos.x][toPos.y] == world.dist[x + cur[0]][y + cur[1]] && rand() % 100 < 50)
         {
             cur = dir;
         }
@@ -56,7 +64,7 @@ sf::Vector2i Enemy::findWanderRoad(World& world)
     for (auto& dir : dirs)
     {
         // 目标方向存在墙壁则直接跳过该方向
-        if (world.map.getTerrainGridType(dir + manager.getPos()) == 0) continue;
+        if (!world.map.canMove(dir + manager.getPos())) continue;
 
         int weight;
         if (dir == manager.getDir())

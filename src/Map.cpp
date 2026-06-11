@@ -3,9 +3,14 @@
 #include <cstdlib>
 #include <queue>
 
-Map::Map(int width, int height, int canWalkPercent, int cellularAutoMataTimes) : width(width), height(height), canWalkPercent(canWalkPercent), cellularAutoMataTimes(cellularAutoMataTimes)
+void Map::init(int width, int height, int canWalkPercent, int cellularAutoMataTimes)
 {
-    terrainGrids.resize(width, std::vector<int>(height));
+    terrainGrids.clear(), entityGrids.clear();
+
+    this->width = width, this->height = height;
+    this->canWalkPercent = canWalkPercent;
+    this->cellularAutoMataTimes = cellularAutoMataTimes;
+    terrainGrids.resize(width, std::vector<TileType>(height));
     entityGrids.resize(width, std::vector<Entity*>(height));
     shape.setSize(sf::Vector2f(TileSize, TileSize));
 }
@@ -17,7 +22,7 @@ bool Map::canMove(sf::Vector2i pos) const
         return false;
     }
 
-    return terrainGrids[pos.x][pos.y] != 0;
+    return terrainGrids[pos.x][pos.y] != TileType::WALL;
 }
 
 void Map::generate()
@@ -31,7 +36,7 @@ void Map::generate()
             {
                 if (rand() % 100 < canWalkPercent)
                 {
-                    terrainGrids[x][y] = 1;
+                    terrainGrids[x][y] = TileType::FLOOR;
                 }
             }
         }
@@ -41,7 +46,7 @@ void Map::generate()
     auto runCellularAutomata = [&]()
     {
         // 保留原网格图
-        std::vector<std::vector<int>> originalGrids = terrainGrids;
+        std::vector<std::vector<TileType>> originalGrids = terrainGrids;
 
         // 定义八个方向
         std::vector<std::vector<int>> dirs = {
@@ -65,20 +70,20 @@ void Map::generate()
                         continue;
                     }
 
-                    if (originalGrids[cx][cy] == 0)
+                    if (originalGrids[cx][cy] == TileType::WALL)
                     {
                         wallCount++;
                     }
                 }
 
                 // 4-5原则
-                if (originalGrids[x][y] == 0)
+                if (originalGrids[x][y] == TileType::WALL)
                 {
-                    if (wallCount < 4) terrainGrids[x][y] = 1;
+                    if (wallCount < 4) terrainGrids[x][y] = TileType::FLOOR;
                 }
                 else
                 {
-                    if (wallCount >= 5) terrainGrids[x][y] = 0;
+                    if (wallCount >= 5) terrainGrids[x][y] = TileType::WALL;
                 }
             }
         }
@@ -104,7 +109,7 @@ void Map::generate()
         {
             for (int y = 1; y < height - 1; ++y)
             {
-                if (vis[y * width + x] || terrainGrids[x][y] == 0) continue;
+                if (vis[y * width + x] || !canMove(sf::Vector2i(x, y))) continue;
 
                 // 成功寻找到未被填充的岛屿
                 std::queue<std::pair<int, int>> q;
@@ -127,7 +132,7 @@ void Map::generate()
                         int nx = cx + dir[0], ny = cy + dir[1];
 
                         if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-                        if (vis[ny * width + nx] || terrainGrids[nx][ny] == 0) continue;
+                        if (vis[ny * width + nx] || !canMove(sf::Vector2i(nx, ny))) continue;
 
                         q.push({nx, ny});
                         vis[ny * width + nx] = 1;
@@ -145,7 +150,7 @@ void Map::generate()
 
             for (auto& [x, y] : islands[i])
             {
-                terrainGrids[x][y] = 0;
+                terrainGrids[x][y] = TileType::WALL;
             }
         }
     };
@@ -179,9 +184,14 @@ void Map::render(sf::RenderWindow& window, const World& world)
             }
             else
             {
-                if (canMove(pos))
+                TileType type = world.map.getTerrainGridType(pos);
+                if (type == TileType::FLOOR)
                 {
                     shape.setFillColor(sf::Color::Green);
+                }
+                else if (type == TileType::STAIRS_DOWN)
+                {
+                    shape.setFillColor(sf::Color::White);
                 }
                 else
                 {
@@ -209,7 +219,7 @@ sf::Vector2i Map::getRandomFloorTile() const
         pos.x = rand() % width;
         pos.y = rand() % height;
 
-        if (getTerrainGridType(pos)) return pos;
+        if (canMove(pos)) return pos;
 
         times++;
     }
